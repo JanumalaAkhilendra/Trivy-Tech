@@ -1,8 +1,19 @@
 // app/(tabs)/explore.tsx (or wherever your yolo pay screen is)
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { renderDigitImages } from '../utils/digitToImage';
+import { getFakeCard } from '../utils/fakeCard';
 
+const randomNumber = Math.floor(1000000000000000 + Math.random() * 9000000000000000)
+  .toString()
+  .match(/.{1,4}/g); // Split into 4-digit chunks like credit card
+
+// E.g., ['6124', '4232', '3456', '7890']
+
+
+const fakeCard = getFakeCard();
 
 const { width } = Dimensions.get('window');
 
@@ -27,61 +38,68 @@ const DigitalCard = ({ frozen }: { frozen: boolean }) => {
     outputRange: [0, 0.9, 1],
   });
 
+
   return (
     <View >
       <Text style={styles.cardLabel}>YOUR DIGITAL DEBIT CARD</Text>
       <View style={[styles.card, frozen && styles.frozenCard]}>
         <ImageBackground
-        source={require('../assets/images/background.jpg')} // ✅ correct path to your image
+        source={require('../assets/images/background.png')} // ✅ correct path to your image
         style={styles.cardContainer}
         imageStyle={{ borderRadius: 10 }} // Optional: if you want rounded corners
       >
-
         {/* Yolo Logo */}
         <View style={styles.cardHeader}>
-          <Text style={styles.yoloText}>YOLO</Text>
-          <View style={styles.visaContainer}>
-            <Text style={styles.visaText}>VISA</Text>
-          </View>
+          <Image source={require('../assets/images/yolo.png')} style={styles.yolo} />
+          <Image source={require('../assets/images/yesbank.png')} style={styles.yesBank} />
         </View>
         
         {/* Card Details */}
         <View style={styles.cardDetails}>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardNumber}>6124</Text>
-            <Text style={styles.cardLabel2}>expiry</Text>
+         <View style={styles.cardRow}>
+            {(randomNumber ?? []).map((chunk, index) => (
+              <View key={index} style={styles.digitChunkContainer}>
+                <Image
+                  source={require('../assets/images/digits/Union.png')}
+                  style={styles.unionImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.digitOverlay}>
+                  {renderDigitImages(chunk)}
+                </View>
+              </View>
+            ))}
           </View>
+
           <View style={styles.cardRow}>
-            <Text style={styles.cardNumber}>4232</Text>
-            <Text style={styles.cardExpiry}>01/28</Text>
-          </View>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardNumber}>3456</Text>
-            <Text style={styles.cardLabel2}>cvv</Text>
-          </View>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardNumber}>7890</Text>
-            <View style={styles.cvvContainer}>
-              <Text style={styles.cvvDots}>•••</Text>
-              <Ionicons name="eye-off" size={16} color="#ff4444" />
+            <View>
+              <Text style={styles.cardLabel}>Expiry</Text>
+              <Text style={styles.cardExpiry}>01/28</Text>
             </View>
+            <View>
+              <Text style={styles.cardLabel}>CVV</Text>
+              <View style={styles.cvvContainer}>
+                <Image source={require('../assets/images/digits/Asterisk-Vector-PNG-File.png')} style={styles.cvvDotsimage} />
+                <Image source={require('../assets/images/digits/Asterisk-Vector-PNG-File.png')} style={styles.cvvDotsimage} />
+                <Image source={require('../assets/images/digits/Asterisk-Vector-PNG-File.png')} style={styles.cvvDotsimage} />
+                <Image source={require('../assets/images/eye.png')} style={styles.eye} />
+              </View>
+            </View>  
           </View>
         </View>
+
         
         {/* Copy Details */}
         <TouchableOpacity style={styles.copyButton}>
           <Ionicons name="copy-outline" size={16} color="#ff4444" />
           <Text style={styles.copyText}>copy details</Text>
         </TouchableOpacity>
-        
-        {/* RuPay Logo */}
-        <View style={styles.rupayContainer}>
-          <Text style={styles.rupayText}>RuPay</Text>
-          <Text style={styles.prepaidText}>PREPAID</Text>
+
+        <View >
+          <Image source={require('../assets/images/Group.png')} style={styles.rupayContainer} />
         </View>
 
-      
-
+    
         
         {/* Card Design Elements */}
         {!frozen && (
@@ -112,6 +130,12 @@ const DigitalCard = ({ frozen }: { frozen: boolean }) => {
           </View>
           </Animated.View>
         )}
+
+
+         {/* Inner Blur Border Overlay */}
+        <BlurView intensity={30} tint="dark" style={styles.blurOverlay}>
+          <View style={styles.blurBorder} />
+        </BlurView>
         </ImageBackground>
       </View>
       
@@ -182,6 +206,48 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     marginBottom: 8,
+  },
+  digitChunkContainer: {
+  position: 'relative',
+  marginRight: 6,
+  justifyContent: 'center',
+  alignItems: 'center',
+  },
+  unionImage: {
+    width: 70, // adjust based on your asset
+    height: 30,
+    top:15,
+  },
+  digitOverlay: {
+    position: 'absolute',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  eye:{
+    height:18,
+    width:18,
+  },
+  yolo:{
+    height:15,
+    width:45,
+  },
+  imageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cvvDotsimage:{
+    width:10,
+    height:10,
+  },
+  yesBank:{
+    width:48,
+    height:20,
+    top:-6,
+  },
+  letter: {
+    width: 10,
+    height: 10,
+    marginHorizontal: 0,
   },
   freezeTextOutside: {
   color: '#ff4444',
@@ -264,9 +330,9 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     color: '#666',
-    fontSize: 12,
-    marginBottom: 20,
-    textAlign: 'center',
+    fontSize: 10,
+    marginBottom: 0,
+    textAlign:'left',
     letterSpacing: 1,
   },
   card: {
@@ -278,6 +344,20 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
+  blurOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderRadius: 20,
+  overflow: 'hidden',
+  backgroundColor: 'rgba(0, 0, 0, 0.2)', // optional to darken slightly
+  },
+  blurBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 20,
+    borderWidth: 4,
+    borderColor: 'rgba(255, 255, 255, 0.10)', // soft white edge
+  },  
   frozenCard: {
     // backgroundColor: '#0f1419',
   },
@@ -285,7 +365,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'stretch',
-    marginBottom: 20,
+    marginBottom: 10,
     marginTop: 20,
     width: '100%',
   },
@@ -294,55 +374,50 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  visaContainer: {
-    backgroundColor: '#0066cc',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
   visaText: {
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
   },
-  cardDetails: {
-    marginBottom: 20,
+   cardDetails: {
+    flexDirection:'row',
+    paddingBottom: 10,
+    paddingTop:5,
+    left:-20,
   },
   cardRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-    width: '70%',
+    flexDirection: 'column',
+    justifyContent:'space-between',
+    alignItems:'flex-start',
+    marginBottom: 30,
+    marginRight:0,
+    marginLeft:25,
   },
   cardNumber: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-    letterSpacing: 2,
-  },
-  cardLabel2: {
-    color: '#666',
-    fontSize: 12,
+    color: '#fff',
+    fontFamily:'',
   },
   cardExpiry: {
-    color: '#fff',
     fontSize: 14,
-    fontWeight: '500',
+    color: '#fff',
   },
   cvvContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   cvvDots: {
+    fontSize: 14,
     color: '#fff',
-    fontSize: 18,
-    marginRight: 8,
+    marginRight: 0,
   },
   copyButton: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 90,
+    left:-40,
+    alignItems:'flex-start',
+    justifyContent:'flex-start',
+    marginBottom: 82,
   },
   copyText: {
     color: '#ff4444',
@@ -351,9 +426,11 @@ const styles = StyleSheet.create({
   },
   rupayContainer: {
     position: 'absolute',
-    bottom: 10,
-    right: 20,
-    alignItems: 'center',
+    bottom: 20,
+    right: -90,
+    height:37,
+    width:75,
+    alignItems:'flex-end',
   },
   rupayText: {
     color: '#fff',
@@ -361,9 +438,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   prepaidText: {
-    color: '#888',
-    fontSize: 10,
-    marginTop: 2,
+    color: '#fff',
+    fontSize: 8,
+    marginTop: 5,
+    marginBottom:8,
+    width: 45,
+    height:8,
   },
   cardDesign: {
     position: 'absolute',
