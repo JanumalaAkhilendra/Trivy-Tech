@@ -1,19 +1,16 @@
 // app/(tabs)/explore.tsx (or wherever your yolo pay screen is)
 import { Ionicons } from '@expo/vector-icons';
+import { faker } from '@faker-js/faker';
 import { BlurView } from 'expo-blur';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { renderDigitImages } from '../utils/digitToImage';
-import { getFakeCard } from '../utils/fakeCard';
 
-const randomNumber = Math.floor(1000000000000000 + Math.random() * 9000000000000000)
-  .toString()
-  .match(/.{1,4}/g); // Split into 4-digit chunks like credit card
-
-// E.g., ['6124', '4232', '3456', '7890']
-
-
-const fakeCard = getFakeCard();
+const cardNumberRaw = faker.finance.creditCardNumber('################'); // 16 digits, no spaces
+const cardNumberChunks = cardNumberRaw.match(/.{1,4}/g); // Always 4,4,4,4
+const cardName = faker.person.fullName();
+const cardExpiry = faker.date.future({ years: 5 }).toLocaleDateString('en-GB', { month: '2-digit', year: '2-digit' });
+const cardCVV = faker.finance.creditCardCVV();
 
 const { width } = Dimensions.get('window');
 
@@ -57,7 +54,7 @@ const DigitalCard = ({ frozen }: { frozen: boolean }) => {
         {/* Card Details */}
         <View style={styles.cardDetails}>
          <View style={styles.cardRow}>
-            {(randomNumber ?? []).map((chunk, index) => (
+            {(cardNumberChunks ?? []).map((chunk, index) => (
               <View key={index} style={styles.digitChunkContainer}>
                 <Image
                   source={require('../assets/images/digits/Union.png')}
@@ -74,7 +71,7 @@ const DigitalCard = ({ frozen }: { frozen: boolean }) => {
           <View style={styles.cardRow}>
             <View>
               <Text style={styles.cardLabel}>Expiry</Text>
-              <Text style={styles.cardExpiry}>01/28</Text>
+              <Text style={styles.cardExpiry}>{cardExpiry}</Text>
             </View>
             <View>
               <Text style={styles.cardLabel}>CVV</Text>
