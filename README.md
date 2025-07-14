@@ -119,5 +119,5 @@ YoloPayApp/
 - [Expo Discord](https://chat.expo.dev)
 
 
-##Author: @JanumalaAkhilendra 
+## Author: @JanumalaAkhilendra 
 Thanks For Visitng , Do give it a star 🌟🌟
